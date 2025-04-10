@@ -1,0 +1,132 @@
+#pragma once
+
+namespace WindowsForm {
+
+	using namespace System;
+	using namespace System::ComponentModel;
+	using namespace System::Collections;
+	using namespace System::Windows::Forms;
+	using namespace System::Data;
+	using namespace System::Drawing;
+#include "pch.h"
+
+	public ref class Form1 : public System::Windows::Forms::Form
+	{
+	public:
+		Form1(void)
+		{
+			InitializeComponent();
+		}
+
+	protected:
+		~Form1()
+		{
+			if (components)
+			{
+				delete components;
+			}
+		}
+	private: System::Windows::Forms::PictureBox^ pictureBox1;
+	private: System::ComponentModel::Container^ components;
+
+#pragma region Windows Form Designer generated code
+		   void InitializeComponent(void)
+		   {
+			   this->pictureBox1 = (gcnew System::Windows::Forms::PictureBox());
+			   (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox1))->BeginInit();
+			   this->SuspendLayout();
+			   // 
+			   // pictureBox1
+			   // 
+			   this->pictureBox1->Location = System::Drawing::Point(12, 12);
+			   this->pictureBox1->Name = L"pictureBox1";
+			   this->pictureBox1->Size = System::Drawing::Size(431, 342);
+			   this->pictureBox1->TabIndex = 0;
+			   this->pictureBox1->TabStop = false;
+			   this->pictureBox1->Click += gcnew System::EventHandler(this, &Form1::pictureBox1_Click);
+			   this->pictureBox1->Paint += gcnew System::Windows::Forms::PaintEventHandler(this, &Form1::pictureBox1_Paint);
+			   this->pictureBox1->Dock = System::Windows::Forms::DockStyle::Fill;
+			   // 
+			   // Form1
+			   // 
+			   this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
+			   this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
+			   this->ClientSize = System::Drawing::Size(455, 366);
+			   this->Controls->Add(this->pictureBox1);
+			   this->Name = L"Form1";
+			   this->Text = L"Form1";
+			   this->Load += gcnew System::EventHandler(this, &Form1::Form1_Load);
+			   this->Resize += gcnew System::EventHandler(this, &Form1::Form1_Resize); // <- itt új
+			   (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox1))->EndInit();
+			   this->ResumeLayout(false);
+		   }
+#pragma endregion
+
+	private: System::Void Form1_Load(System::Object^ sender, System::EventArgs^ e) {}
+
+	private: System::Void Form1_Resize(System::Object^ sender, System::EventArgs^ e) {
+		this->pictureBox1->Refresh(); // újrarajzolás kérés
+	}
+
+	private: System::Void pictureBox1_Click(System::Object^ sender, System::EventArgs^ e) {}
+
+	private: System::Void pictureBox1_Paint(System::Object^ sender, System::Windows::Forms::PaintEventArgs^ e) {
+		Graphics^ g = e->Graphics;
+
+		int width = this->pictureBox1->ClientSize.Width;
+		int height = this->pictureBox1->ClientSize.Height;
+		int minDim = Math::Min(width, height);
+		int side = (int)(0.8 * minDim + 0.5);
+
+		int offsetX = (width - side) / 2;
+		int offsetY = (height - side) / 2;
+
+		Pen^ pen = gcnew Pen(Color::Black, 2.0f);
+		int chamfer = (int)(0.05 * side + 0.5);
+
+		System::Drawing::Drawing2D::GraphicsPath^ path = gcnew System::Drawing::Drawing2D::GraphicsPath();
+		path->StartFigure();
+		path->AddLine(offsetX + chamfer, offsetY, offsetX + side - chamfer, offsetY);
+		path->AddLine(offsetX + side, offsetY + chamfer, offsetX + side, offsetY + side - chamfer);
+		path->AddLine(offsetX + side - chamfer, offsetY + side, offsetX + chamfer, offsetY + side);
+		path->AddLine(offsetX, offsetY + side - chamfer, offsetX, offsetY + chamfer);
+		path->CloseFigure();
+		g->DrawPath(pen, path);
+
+		double segment = (side - 2.0 * chamfer) / 21.0;
+		int pinLength = (int)(0.10 * side + 0.5);
+		int pinWidth = (int)(0.40 * segment + 0.5);
+		if (pinWidth < 1) pinWidth = 1;
+
+		Pen^ pinPen = gcnew Pen(Color::Black, 1.5f);
+
+		for (int i = 1; i <= 20; ++i) {
+			double centerX = offsetX + chamfer + i * segment;
+			int x = (int)(centerX - pinWidth / 2.0);
+			int y = offsetY - pinLength;
+			g->DrawRectangle(pinPen, x, y, pinWidth, pinLength);
+		}
+
+		for (int i = 1; i <= 20; ++i) {
+			double centerX = offsetX + chamfer + i * segment;
+			int x = (int)(centerX - pinWidth / 2.0);
+			int y = offsetY + side;
+			g->DrawRectangle(pinPen, x, y, pinWidth, pinLength);
+		}
+
+		for (int i = 1; i <= 20; ++i) {
+			double centerY = offsetY + chamfer + i * segment;
+			int x = offsetX - pinLength;
+			int y = (int)(centerY - pinWidth / 2.0);
+			g->DrawRectangle(pinPen, x, y, pinLength, pinWidth);
+		}
+
+		for (int i = 1; i <= 20; ++i) {
+			double centerY = offsetY + chamfer + i * segment;
+			int x = offsetX + side;
+			int y = (int)(centerY - pinWidth / 2.0);
+			g->DrawRectangle(pinPen, x, y, pinLength, pinWidth);
+		}
+	}
+	};
+}
