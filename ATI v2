@@ -1,0 +1,157 @@
+// Kettős dugattyús mechanizmus - Form1.h főbb elemei
+
+#pragma once
+
+#include <Windows.h>
+#include <math.h>
+
+using namespace System;
+using namespace System::ComponentModel;
+using namespace System::Collections;
+using namespace System::Windows::Forms;
+using namespace System::Data;
+using namespace System::Drawing;
+
+namespace KettosDugattyu {
+
+    public ref class Form1 : public System::Windows::Forms::Form
+    {
+    public:
+        Form1(void)
+        {
+            InitializeComponent();
+        }
+
+    protected:
+        ~Form1()
+        {
+            if (components)
+                delete components;
+        }
+
+    private:
+        Graphics^ pgr, ^ gr;
+        Pen^ toll;
+        SolidBrush^ ecset;
+        Bitmap^ bm;
+        float fok = 90;
+        float tx = 400;
+        float ty = 300;
+        float hr = 50;
+        float hl = 150;
+        float dw = 30;
+        float dh = 40;
+
+    private: System::Windows::Forms::PictureBox^ pictureBox1;
+    private: System::Windows::Forms::Timer^ timer1;
+    private: System::Windows::Forms::TrackBar^ trackBar1;
+    private: System::Windows::Forms::Button^ button1;
+    private: System::ComponentModel::IContainer^ components;
+
+#pragma region Windows Form Designer generated code
+           void InitializeComponent(void)
+           {
+               this->components = gcnew System::ComponentModel::Container();
+               this->pictureBox1 = gcnew System::Windows::Forms::PictureBox();
+               this->timer1 = gcnew System::Windows::Forms::Timer(this->components);
+               this->trackBar1 = gcnew System::Windows::Forms::TrackBar();
+               this->button1 = gcnew System::Windows::Forms::Button();
+
+               this->SuspendLayout();
+
+               this->pictureBox1->Dock = System::Windows::Forms::DockStyle::Fill;
+               this->pictureBox1->Location = System::Drawing::Point(0, 0);
+               this->pictureBox1->Size = System::Drawing::Size(800, 600);
+               this->Controls->Add(this->pictureBox1);
+
+               this->trackBar1->Minimum = -30;
+               this->trackBar1->Maximum = 30;
+               this->trackBar1->Value = 0;
+               this->trackBar1->Dock = DockStyle::Bottom;
+               this->trackBar1->Scroll += gcnew System::EventHandler(this, &Form1::trackBar1_Scroll);
+               this->Controls->Add(this->trackBar1);
+
+               this->button1->Text = "Stop";
+               this->button1->Dock = DockStyle::Top;
+               this->button1->Click += gcnew System::EventHandler(this, &Form1::button1_Click);
+               this->Controls->Add(this->button1);
+
+               this->Load += gcnew System::EventHandler(this, &Form1::Form1_Load);
+               this->Resize += gcnew System::EventHandler(this, &Form1::Form1_Resize);
+               this->timer1->Tick += gcnew System::EventHandler(this, &Form1::timer1_Tick);
+
+               this->Text = "Kettős dugattyú mechanizmus";
+               this->ClientSize = System::Drawing::Size(800, 600);
+               this->ResumeLayout(false);
+           }
+#pragma endregion
+
+    private: System::Void Form1_Load(System::Object^ sender, System::EventArgs^ e) {
+        toll = gcnew Pen(Color::Black);
+        ecset = gcnew SolidBrush(Color::Gray);
+        bm = gcnew Bitmap(pictureBox1->Width, pictureBox1->Height);
+        gr = Graphics::FromImage(bm);
+        timer1->Interval = 10 + 150 - trackBar1->Value * 5;
+        timer1->Start();
+    }
+
+    private: System::Void timer1_Tick(System::Object^ sender, System::EventArgs^ e) {
+        gr->Clear(this->BackColor);
+        gr->ResetTransform();
+        gr->TranslateTransform(tx, ty);
+        gr->ScaleTransform(1, -1);
+
+        DugattyuZ();
+
+        fok += 5;
+        pictureBox1->Image = bm;
+    }
+
+    private: System::Void trackBar1_Scroll(System::Object^ sender, System::EventArgs^ e) {
+        timer1->Interval = 10 + 150 - trackBar1->Value * 5;
+    }
+
+    private: System::Void Form1_Resize(System::Object^ sender, System::EventArgs^ e) {
+        bm = gcnew Bitmap(pictureBox1->Width, pictureBox1->Height);
+        gr = Graphics::FromImage(bm);
+    }
+
+    private: System::Void button1_Click(System::Object^ sender, System::EventArgs^ e) {
+        if (timer1->Enabled) {
+            button1->Text = "Start";
+            timer1->Enabled = false;
+        }
+        else {
+            button1->Text = "Stop";
+            timer1->Enabled = true;
+        }
+    }
+
+    public: double d2r(double d) {
+        return Math::PI / 180 * d;
+    }
+
+          void DugattyuZ() {
+              float forgx = Math::Cos(d2r(fok)) * hr;
+              float forgy = Math::Sin(d2r(fok)) * hr;
+
+              PointF kozep(forgx, forgy);
+              PointF bal = PointF(forgx - 100, forgy + 100);
+              PointF jobb = PointF(forgx + 100, forgy + 100);
+
+              PointF balDugattyu(bal.X - hl, bal.Y);
+              PointF jobbDugattyu(jobb.X + hl, jobb.Y);
+
+              toll->Color = Color::Black;
+              toll->Width = 6;
+              gr->DrawLine(toll, balDugattyu, bal);
+              gr->DrawLine(toll, bal, kozep);
+              gr->DrawLine(toll, kozep, jobb);
+              gr->DrawLine(toll, jobb, jobbDugattyu);
+
+              ecset->Color = Color::Gray;
+              gr->FillRectangle(ecset, balDugattyu.X - dw, balDugattyu.Y, 2 * dw, dh);
+              gr->FillRectangle(ecset, jobbDugattyu.X - dw, jobbDugattyu.Y, 2 * dw, dh);
+          }
+    };
+} // namespace
