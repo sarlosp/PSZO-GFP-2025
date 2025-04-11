@@ -1,0 +1,159 @@
+#pragma once
+
+namespace WindowsForm {
+
+	using namespace System;
+	using namespace System::ComponentModel;
+	using namespace System::Collections;
+	using namespace System::Windows::Forms;
+	using namespace System::Data;
+	using namespace System::Drawing;
+
+	public ref class Form1 : public System::Windows::Forms::Form
+	{
+	public:
+		Form1(void)
+		{
+			InitializeComponent();
+			this->Text = "Grafika";
+			this->BackColor = Color::White;
+		}
+
+	protected:
+		~Form1()
+		{
+			if (komponensek)
+			{
+				delete komponensek;
+			}
+		}
+
+	private:
+		System::ComponentModel::Container^ komponensek;
+		Timer^ timer1;
+		TrackBar^ trackBar1;
+		Button^ button1;
+		PictureBox^ pictureBox1;
+
+		Graphics^ pgr;
+		Graphics^ gr;
+		Pen^ toll;
+		SolidBrush^ ecset;
+		Bitmap^ bm;
+		float fok = 90;
+		float tx = 300;
+		float ty = 300;
+		float hr = 50;
+		float hl = 200;
+		float dw = 50;
+		float dh = 50;
+
+#pragma region Windows Form Designer generated code
+		void InitializeComponent(void)
+		{
+			timer1 = gcnew Timer();
+			trackBar1 = gcnew TrackBar();
+			button1 = gcnew Button();
+			pictureBox1 = gcnew PictureBox();
+			this->SuspendLayout();
+
+			trackBar1->Location = Drawing::Point(10, 10);
+			trackBar1->Size = Drawing::Size(200, 30);
+			trackBar1->Minimum = -30;
+			trackBar1->Maximum = 30;
+			trackBar1->Scroll += gcnew EventHandler(this, &Form1::trackBar1_Scroll);
+
+			button1->Location = Drawing::Point(220, 10);
+			button1->Size = Drawing::Size(80, 30);
+			button1->Text = "Stop";
+			button1->Click += gcnew EventHandler(this, &Form1::button1_Click);
+
+			pictureBox1->Location = Drawing::Point(10, 50);
+			pictureBox1->Size = Drawing::Size(760, 500);
+			pictureBox1->Anchor = AnchorStyles::Top | AnchorStyles::Bottom | AnchorStyles::Left | AnchorStyles::Right;
+
+			timer1->Tick += gcnew EventHandler(this, &Form1::timer1_Tick);
+
+			this->ClientSize = Drawing::Size(800, 600);
+			this->Controls->Add(trackBar1);
+			this->Controls->Add(button1);
+			this->Controls->Add(pictureBox1);
+			this->Load += gcnew EventHandler(this, &Form1::Form1_Load);
+			this->Resize += gcnew EventHandler(this, &Form1::Form1_Resize);
+			this->ResumeLayout(false);
+		}
+#pragma endregion
+
+	private: System::Void Form1_Load(System::Object^ sender, System::EventArgs^ e) {
+		toll = gcnew Pen(Color::Silver);
+		ecset = gcnew SolidBrush(Color::Silver);
+		bm = gcnew Bitmap(pictureBox1->Width, pictureBox1->Height);
+		gr = Graphics::FromImage(bm);
+		timer1->Interval = 10 + 150 - trackBar1->Value * 5;
+		timer1->Start();
+	}
+
+	private: System::Void Form1_Resize(System::Object^ sender, System::EventArgs^ e) {
+		bm = gcnew Bitmap(pictureBox1->Width, pictureBox1->Height);
+		gr = Graphics::FromImage(bm);
+	}
+
+	private: System::Void trackBar1_Scroll(System::Object^ sender, System::EventArgs^ e) {
+		timer1->Interval = 10 + 150 - trackBar1->Value * 5;
+	}
+
+	private: System::Void button1_Click(System::Object^ sender, System::EventArgs^ e) {
+		if (timer1->Enabled) {
+			button1->Text = "Start";
+			timer1->Enabled = false;
+		}
+		else {
+			button1->Text = "Stop";
+			timer1->Enabled = true;
+		}
+	}
+
+	public: double d2r(double d) {
+		return Math::PI / 180 * d;
+	}
+
+	private: System::Void timer1_Tick(System::Object^ sender, System::EventArgs^ e) {
+		gr->Clear(this->BackColor);
+		gr->ResetTransform();
+		gr->TranslateTransform(tx, ty);
+		gr->ScaleTransform(1, -1);
+		Dugattyu(0, 100); // alsó
+		Dugattyu(180, -100); // felső
+		fok += 5;
+		pictureBox1->Image = bm;
+	}
+
+		   void Dugattyu(float fazis, float yOffset) {
+			   float szog = fok + fazis;
+			   float forgx = (float)(Math::Cos(d2r(szog)) * hr);
+			   float forgy = (float)(Math::Sin(d2r(szog)) * hr);
+			   float dgx = forgx + Math::Sqrt(hl * hl - forgy * forgy);
+			   float dgy = 0;
+
+			   gr->ResetTransform();
+			   gr->TranslateTransform(tx, ty + yOffset);
+			   gr->ScaleTransform(1, -1);
+
+			   toll->Width = 4;
+			   toll->Color = Color::DarkGray;
+			   gr->DrawEllipse(toll, -hr, -hr, 2 * hr, 2 * hr);
+			   gr->FillEllipse(ecset, -hr + 5, -hr + 5, 2 * hr - 10, 2 * hr - 10);
+
+			   toll->Color = Color::Black;
+			   toll->Width = 6;
+			   gr->DrawLine(toll, 0, 0, forgx, forgy);
+			   gr->DrawLine(toll, forgx, forgy, dgx, dgy);
+
+			   toll->Width = 2;
+			   ecset->Color = Color::Gray;
+			   gr->FillRectangle(ecset, dgx, -dh / 2, dh, 2 * dw);
+			   gr->DrawRectangle(toll, dgx, -dh / 2, dh, 2 * dw);
+			   gr->DrawRectangle(toll, dgx + dh, -dh, 10, 2 * dh);
+		   }
+	};
+}
