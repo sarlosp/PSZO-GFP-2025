@@ -1,0 +1,133 @@
+#pragma once
+
+namespace WindowsForm {
+
+	using namespace System;
+	using namespace System::ComponentModel;
+	using namespace System::Collections;
+	using namespace System::Windows::Forms;
+	using namespace System::Data;
+	using namespace System::Drawing;
+	using namespace System::IO;
+
+	public ref class Form1 : public System::Windows::Forms::Form
+	{
+	public:
+		Form1(void)
+		{
+			InitializeComponent();
+			this->Text = "z = x^2 + y^2 + 1 felület";
+			this->BackColor = Color::White;
+		}
+
+	protected:
+		~Form1()
+		{
+			if (components)
+			{
+				delete components;
+			}
+		}
+
+	private:
+		System::ComponentModel::Container^ components;
+		PictureBox^ pictureBox1;
+		Bitmap^ bm;
+		Graphics^ gr;
+		int tx = 400, ty = 300;
+
+#pragma region Windows Form Designer generated code
+		void InitializeComponent(void)
+		{
+			this->pictureBox1 = (gcnew System::Windows::Forms::PictureBox());
+			this->SuspendLayout();
+			// 
+			// pictureBox1
+			// 
+			this->pictureBox1->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->pictureBox1->Location = System::Drawing::Point(0, 0);
+			this->pictureBox1->Name = L"pictureBox1";
+			this->pictureBox1->Size = System::Drawing::Size(800, 600);
+			this->pictureBox1->TabIndex = 0;
+			this->pictureBox1->TabStop = false;
+			// 
+			// Form1
+			// 
+			this->ClientSize = System::Drawing::Size(800, 600);
+			this->Controls->Add(this->pictureBox1);
+			this->Name = L"Form1";
+			this->Load += gcnew System::EventHandler(this, &Form1::Form1_Load);
+			this->ResumeLayout(false);
+		}
+#pragma endregion
+
+	private: System::Void Form1_Load(System::Object^ sender, System::EventArgs^ e) {
+		IrjTxtFajlt(); // csak egyszer hozzuk létre
+
+		int meret = 20;
+		try {
+			StreamReader^ sr = gcnew StreamReader("racs.txt");
+			meret = Convert::ToInt32(sr->ReadLine());
+			sr->Close();
+		}
+		catch (...) {
+			MessageBox::Show("Nem sikerült beolvasni a racs.txt fájlt!", "Hiba", MessageBoxButtons::OK, MessageBoxIcon::Error);
+			return;
+		}
+
+		bm = gcnew Bitmap(pictureBox1->Width, pictureBox1->Height);
+		gr = Graphics::FromImage(bm);
+		gr->Clear(Color::White);
+		gr->TranslateTransform(tx, ty);
+
+		double xmin = -1.0, xmax = 1.0;
+		double ymin = -1.0, ymax = 1.0;
+		Pen^ pen = gcnew Pen(Color::Black);
+
+		for (int i = 0; i <= meret; i++) {
+			double x = xmin + (xmax - xmin) * i / meret;
+			PointF p0 = Vetit(x, ymin);
+			for (int j = 1; j <= meret; j++) {
+				double y = ymin + (ymax - ymin) * j / meret;
+				PointF p1 = Vetit(x, y);
+				gr->DrawLine(pen, p0, p1);
+				p0 = p1;
+			}
+		}
+
+		for (int j = 0; j <= meret; j++) {
+			double y = ymin + (ymax - ymin) * j / meret;
+			PointF p0 = Vetit(xmin, y);
+			for (int i = 1; i <= meret; i++) {
+				double x = xmin + (xmax - xmin) * i / meret;
+				PointF p1 = Vetit(x, y);
+				gr->DrawLine(pen, p0, p1);
+				p0 = p1;
+			}
+		}
+		pictureBox1->Image = bm;
+	}
+
+	private: void IrjTxtFajlt() {
+		String^ fajlnev = "racs.txt";
+		if (!File::Exists(fajlnev)) {
+			try {
+				StreamWriter^ sw = gcnew StreamWriter(fajlnev);
+				sw->WriteLine("20"); // alapértelmezett rács felbontás
+				sw->Close();
+			}
+			catch (Exception^ ex) {
+				MessageBox::Show("Nem sikerült létrehozni a racs.txt fájlt:\n" + ex->Message,
+					"Hiba", MessageBoxButtons::OK, MessageBoxIcon::Error);
+			}
+		}
+	}
+
+	private: PointF Vetit(double x, double y) {
+		double z = x * x + y * y + 1;
+		double x2D = x * 30 + y * -30;
+		double y2D = x * 15 + y * 15 - z * 20;
+		return PointF((float)x2D, (float)y2D);
+	}
+	};
+}
