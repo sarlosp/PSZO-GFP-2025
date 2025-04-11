@@ -1,0 +1,150 @@
+#pragma once
+
+namespace WindowsForm {
+
+	using namespace System;
+	using namespace System::ComponentModel;
+	using namespace System::Collections;
+	using namespace System::Windows::Forms;
+	using namespace System::Data;
+	using namespace System::Drawing;
+
+	public ref class Form1 : public System::Windows::Forms::Form
+	{
+	public:
+		Form1(void)
+		{
+			InitializeComponent();
+			this->Text = "y = x^3 - 6x^2 + 4x + 12";
+			this->BackColor = Color::White;
+			this->SetStyle(ControlStyles::ResizeRedraw, true); // redraw on resize
+		}
+
+	protected:
+		~Form1()
+		{
+			if (components)
+			{
+				delete components;
+			}
+		}
+
+	private:
+		System::ComponentModel::Container^ components;
+
+#pragma region Windows Form Designer generated code
+		void InitializeComponent(void)
+		{
+			this->SuspendLayout();
+			// 
+			// Form1
+			// 
+			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
+			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
+			this->ClientSize = System::Drawing::Size(800, 600);
+			this->Name = L"Form1";
+			this->Text = L"Form1";
+			this->Paint += gcnew System::Windows::Forms::PaintEventHandler(this, &Form1::Form1_Paint);
+			this->ResumeLayout(false);
+		}
+#pragma endregion
+
+	private: double f(double x) {
+		return x * x * x - 6 * x * x + 4 * x + 12;
+	}
+
+	private: double bisection(double a, double b, double eps) {
+		double fa = f(a);
+		double fb = f(b);
+		if (fa * fb >= 0) return Double::NaN;
+
+		while ((b - a) > eps) {
+			double c = (a + b) / 2;
+			double fc = f(c);
+			if (fa * fc < 0) {
+				b = c;
+				fb = fc;
+			}
+			else {
+				a = c;
+				fa = fc;
+			}
+		}
+		return (a + b) / 2;
+	}
+
+	private: System::Void Form1_Paint(System::Object^ sender, System::Windows::Forms::PaintEventArgs^ e) {
+		Graphics^ g = e->Graphics;
+		Pen^ pen = gcnew Pen(Color::Black);
+		Pen^ rootPen = gcnew Pen(Color::Red);
+		Brush^ rootBrush = Brushes::Red;
+
+		int w = this->ClientRectangle.Width;
+		int h = this->ClientRectangle.Height;
+
+		double xMin = 0, xMax = 6;
+		int pixelBorder = 50;
+		double yMin = Double::MaxValue, yMax = Double::MinValue;
+
+		for (double x = xMin; x <= xMax; x += 0.01) {
+			double y = f(x);
+			if (y < yMin) yMin = y;
+			if (y > yMax) yMax = y;
+		}
+
+		double xScale = (w - 2 * pixelBorder) / (xMax - xMin);
+		double yScale = (h - 2 * pixelBorder) / (yMax - yMin);
+
+		int zeroX = pixelBorder + (int)((0 - xMin) * xScale);
+		int zeroY = h - pixelBorder - (int)((0 - yMin) * yScale);
+		g->DrawLine(pen, pixelBorder, zeroY, w - pixelBorder, zeroY);
+		g->DrawLine(pen, zeroX, pixelBorder, zeroX, h - pixelBorder);
+
+		for (int i = 0; i <= 6; i++) {
+			int x = pixelBorder + (int)((i - xMin) * xScale);
+			g->DrawLine(pen, x, zeroY - 5, x, zeroY + 5);
+			g->DrawString(i.ToString(), SystemFonts::DefaultFont, Brushes::Black, x - 5, zeroY + 5);
+		}
+
+		for (int i = (int)yMin; i <= (int)yMax; i += 10) {
+			int y = h - pixelBorder - (int)((i - yMin) * yScale);
+			g->DrawLine(pen, zeroX - 5, y, zeroX + 5, y);
+			g->DrawString(i.ToString(), SystemFonts::DefaultFont, Brushes::Black, zeroX + 5, y - 7);
+		}
+
+		g->DrawString("y = x^3 - 6x^2 + 4x + 12", SystemFonts::DefaultFont, Brushes::Black, 10, 10);
+
+		for (double x = xMin; x < xMax; x += 0.01) {
+			double y1 = f(x);
+			double y2 = f(x + 0.01);
+			int px1 = pixelBorder + (int)((x - xMin) * xScale);
+			int py1 = h - pixelBorder - (int)((y1 - yMin) * yScale);
+			int px2 = pixelBorder + (int)(((x + 0.01) - xMin) * xScale);
+			int py2 = h - pixelBorder - (int)((y2 - yMin) * yScale);
+			g->DrawLine(pen, px1, py1, px2, py2);
+		}
+
+		array<double>^ roots = gcnew array<double>(3);
+		int found = 0;
+		for (double a = xMin; a < xMax; a += 0.1) {
+			double b = a + 0.1;
+			if (f(a) * f(b) < 0) {
+				double root = bisection(a, b, 1e-6);
+				if (!Double::IsNaN(root)) {
+					roots[found++] = root;
+					if (found >= 3) break;
+				}
+			}
+		}
+
+		for (int i = 0; i < found; i++) {
+			double x = roots[i];
+			double y = f(x);
+			int px = pixelBorder + (int)((x - xMin) * xScale);
+			int py = h - pixelBorder - (int)((y - yMin) * yScale);
+			g->FillEllipse(rootBrush, px - 5, py - 5, 10, 10);
+			g->DrawString("x ≈ " + x.ToString("F4"), SystemFonts::DefaultFont, Brushes::Red, px + 5, py - 20);
+		}
+	}
+	};
+}
