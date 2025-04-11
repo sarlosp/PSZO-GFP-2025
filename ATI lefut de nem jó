@@ -1,0 +1,156 @@
+#pragma once
+
+namespace WindowsForm {
+
+	using namespace System;
+	using namespace System::ComponentModel;
+	using namespace System::Collections;
+	using namespace System::Windows::Forms;
+	using namespace System::Data;
+	using namespace System::Drawing;
+
+	public ref class Form1 : public System::Windows::Forms::Form
+	{
+	public:
+		Form1(void)
+		{
+			InitializeComponent();
+		}
+
+	protected:
+		~Form1()
+		{
+			if (components)
+			{
+				delete components;
+			}
+		}
+
+	private: System::Windows::Forms::PictureBox^ pictureBox1;
+	private: System::Windows::Forms::Button^ button1;
+	private: System::Windows::Forms::Timer^ timer1;
+	private: System::Windows::Forms::TrackBar^ trackBar1;
+
+	private:
+		System::ComponentModel::Container^ components;
+
+#pragma region Windows Form Designer generated code
+		void InitializeComponent(void)
+		{
+			this->components = (gcnew System::ComponentModel::Container());
+			this->pictureBox1 = (gcnew System::Windows::Forms::PictureBox());
+			this->button1 = (gcnew System::Windows::Forms::Button());
+			this->timer1 = (gcnew System::Windows::Forms::Timer(this->components));
+			this->trackBar1 = (gcnew System::Windows::Forms::TrackBar());
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox1))->BeginInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->trackBar1))->BeginInit();
+			this->SuspendLayout();
+			this->pictureBox1->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->pictureBox1->Location = System::Drawing::Point(0, 0);
+			this->pictureBox1->Name = L"pictureBox1";
+			this->pictureBox1->Size = System::Drawing::Size(800, 450);
+			this->pictureBox1->TabIndex = 0;
+			this->pictureBox1->TabStop = false;
+			this->button1->Location = System::Drawing::Point(10, 10);
+			this->button1->Size = System::Drawing::Size(60, 30);
+			this->button1->Click += gcnew System::EventHandler(this, &Form1::button1_Click);
+			this->timer1->Tick += gcnew System::EventHandler(this, &Form1::timer1_Tick);
+			this->trackBar1->Location = System::Drawing::Point(80, 10);
+			this->trackBar1->Size = System::Drawing::Size(200, 30);
+			this->trackBar1->Scroll += gcnew System::EventHandler(this, &Form1::trackBar1_Scroll);
+			this->Controls->Add(this->trackBar1);
+			this->Controls->Add(this->button1);
+			this->Controls->Add(this->pictureBox1);
+			this->Resize += gcnew System::EventHandler(this, &Form1::Form1_Resize);
+			this->Load += gcnew System::EventHandler(this, &Form1::Form1_Load);
+			this->Text = L"Kétdugattyús animáció (tengelyes)";
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox1))->EndInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->trackBar1))->EndInit();
+			this->ResumeLayout(false);
+			this->PerformLayout();
+		}
+#pragma endregion
+
+		Graphics^ gr;
+		Pen^ toll;
+		SolidBrush^ ecset;
+		Bitmap^ bm;
+		float fok = 90;
+		float tx = 400;
+		float ty = 300;
+		float hr = 50;
+		float hl = 300;
+		float dw = 50;
+		float dh = 50;
+		float tav = 300;
+
+		double d2r(double d) {
+			return Math::PI / 180 * d;
+		}
+
+	private: System::Void Form1_Load(System::Object^ sender, System::EventArgs^ e) {
+		this->Text = "Grafika";
+		button1->Text = "Stop";
+		trackBar1->Minimum = -30;
+		trackBar1->Maximum = 30;
+		toll = gcnew Pen(Color::Silver);
+		ecset = gcnew SolidBrush(Color::Silver);
+		bm = gcnew Bitmap(pictureBox1->Width, pictureBox1->Height);
+		gr = Graphics::FromImage(bm);
+		timer1->Interval = 10 + 150 - trackBar1->Value * 5;
+		timer1->Start();
+	}
+
+	private: System::Void Form1_Resize(System::Object^ sender, System::EventArgs^ e) {
+		bm = gcnew Bitmap(pictureBox1->Width, pictureBox1->Height);
+		gr = Graphics::FromImage(bm);
+	}
+
+	private: System::Void button1_Click(System::Object^ sender, System::EventArgs^ e) {
+		timer1->Enabled = !timer1->Enabled;
+		button1->Text = timer1->Enabled ? "Stop" : "Start";
+	}
+
+	private: System::Void trackBar1_Scroll(System::Object^ sender, System::EventArgs^ e) {
+		timer1->Interval = 10 + 150 - trackBar1->Value * 5;
+	}
+
+	private: System::Void timer1_Tick(System::Object^ sender, System::EventArgs^ e) {
+		gr->Clear(this->BackColor);
+		gr->ResetTransform();
+		gr->TranslateTransform(tx, ty);
+		gr->ScaleTransform(1, -1);
+		Dugattyu(-tav / 2, fok);
+		Dugattyu(tav / 2, fok + 180);
+		fok += 5;
+		pictureBox1->Image = bm;
+	}
+
+		   void Dugattyu(float xoffset, float szog) {
+			   float forgx = Math::Cos(d2r(szog)) * hr;
+			   float forgy = Math::Sin(d2r(szog)) * hr;
+			   float dgx = xoffset + hr + hl;
+			   float dgy = forgy + Math::Sqrt(hl * hl - forgx * forgx);
+			   toll->Width = 2;
+			   toll->Color = Color::Silver;
+			   toll->DashStyle = System::Drawing::Drawing2D::DashStyle::DashDot;
+			   gr->DrawLine(toll, PointF(-400.0f, 0.0f), PointF(400.0f, 0.0f));
+			   toll->DashStyle = System::Drawing::Drawing2D::DashStyle::Solid;
+			   toll->Width = 4;
+			   toll->Color = Color::Black;
+			   float r = 1.5f * hr;
+			   gr->DrawEllipse(toll, xoffset - r, -r, 2 * r, 2 * r);
+			   toll->Width = 30;
+			   gr->DrawLine(toll, PointF(xoffset + forgx, forgy), PointF(dgx, dgy));
+			   toll->Width = 2;
+			   ecset->Color = Color::Silver;
+			   gr->FillRectangle(ecset, dgx - dw, dgy, 2 * dw, dh);
+			   gr->DrawRectangle(toll, dgx - dw, dgy, 2 * dw, dh);
+			   r = 20;
+			   gr->FillEllipse(ecset, xoffset + forgx - r, forgy - r, 2 * r, 2 * r);
+			   gr->DrawEllipse(toll, xoffset + forgx - r, forgy - r, 2 * r, 2 * r);
+			   gr->FillEllipse(ecset, dgx - r, dgy - r, 2 * r, 2 * r);
+			   gr->DrawEllipse(toll, dgx - r, dgy - r, 2 * r, 2 * r);
+		   }
+	};
+}
