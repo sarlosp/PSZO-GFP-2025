@@ -1,0 +1,33 @@
+%% main_script.m
+% Felhasználói interfész és függvényhívás
+clear; clc;
+
+% Megoldás kiszámítása a solve_equation függvénnyel
+x = solve_equation();
+
+%% solve_equation függvény
+function x = solve_equation()
+    % Bemenet beolvasása
+    a = input('Adja meg az a értékét: ');
+    b = input('Adja meg a b értékét: ');
+
+    % Ellenőrizzük, hogy sqrt(b) értelmezhető-e
+    if b < 0
+        disp('Nincs valós megoldás (b negatív)');
+        x = [];
+        return;
+    end
+
+    % Számítás: e^x = -sqrt(b) / 3^a
+    coef = 3^a;
+    rad  = -sqrt(b) / coef;
+
+    % Eredmény kiértékelése
+    if rad > 0
+        x = log(rad);
+        fprintf('Valós megoldás: x = %f\n', x);
+    else
+        x = log(rad);
+        fprintf('Nincs valós megoldás. Komplex megoldás: x = %s\n', num2str(x));
+    end
+end
