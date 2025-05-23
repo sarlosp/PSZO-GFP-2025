@@ -1,0 +1,38 @@
+function solve_equilibrium_manual_cross()
+    % Given data
+    ra = [10,10,0];
+    rb = [20,30,0];
+    rc = [15,25,0];
+    Fa = [20,10,0];
+    Fb = [-20,-10,0];
+
+    % 1. Resultant Force
+    F_total = Fa + Fb;
+    fprintf('Resultant Force: [%.2f %.2f %.2f]\n', F_total);
+
+    % 2. Moments about origin (manual cross product)
+    Ma = manual_cross(ra, Fa);
+    Mb = manual_cross(rb, Fb);
+    M_total = Ma + Mb;
+    fprintf('Total Moment about the origin: [%.2f %.2f %.2f]\n', M_total);
+
+    % 3. Check equilibrium at rc
+    Ma_rc = manual_cross(ra - rc, Fa);
+    Mb_rc = manual_cross(rb - rc, Fb);
+    M_rc = Ma_rc + Mb_rc;
+
+    fprintf('Resultant Force at rc: [%.2f %.2f %.2f]\n', F_total);
+    fprintf('Total Moment at rc: [%.2f %.2f %.2f]\n', M_rc);
+
+    if all(abs(F_total) < 1e-10) && all(abs(M_rc) < 1e-10)
+        disp('The body is in equilibrium at rc.');
+    else
+        disp('The body is NOT in equilibrium at rc.');
+    end
+end
+
+function c = manual_cross(a, b)
+    c = [ a(2)*b(3) - a(3)*b(2),
+          a(3)*b(1) - a(1)*b(3),
+          a(1)*b(2) - a(2)*b(1) ];
+end
