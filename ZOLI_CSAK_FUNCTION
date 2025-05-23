@@ -1,0 +1,18 @@
+function solve_exp_sqrt()
+    % Reads a and b, solves a*exp(sqrt(x)) - b = 0
+    a = input('Adja meg az a értékét: ');
+    b = input('Adja meg a b értékét: ');
+    
+    if a == 0
+        disp('Nincs megoldás');
+        return;
+    end
+    q = b/a;
+    if q <= 0
+        disp('Nincs megoldás');
+        return;
+    end
+    
+    x = (log(q))^2;
+    fprintf('A megoldás: x = %.10f\n', x);
+end
