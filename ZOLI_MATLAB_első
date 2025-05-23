@@ -1,0 +1,13 @@
+function solve_exp_sqrt_equation()
+    % Reads values of a and b, solves a * exp(sqrt(x)) - b = 0 for x
+    a = input('Enter value for a: ');
+    b = input('Enter value for b: ');
+    
+    % Check if solution is possible
+    if a == 0 || b/a <= 0
+        disp('Nincs megoldás'); % "No solution"
+    else
+        x = (log(b/a))^2;
+        fprintf('A megoldás: x = %.4f\n', x);
+    end
+end
