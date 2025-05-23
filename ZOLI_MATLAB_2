@@ -1,0 +1,36 @@
+ra = [10, 10, 0];
+rb = [20, 30, 0];
+Fa = [20, 10, 0];
+Fb = [-20, -10, 0];
+rc = [15, 25, 0];
+
+% --- 1) Eredő erő ---
+F = Fa + Fb;  % [0,0,0]
+
+% --- 2) Nyomaték az origóra (komponensenként) ---
+% M0 = ra × Fa + rb × Fb
+M0x = ( ra(2)*Fa(3) - ra(3)*Fa(2) ) + ( rb(2)*Fb(3) - rb(3)*Fb(2) );
+M0y = ( ra(3)*Fa(1) - ra(1)*Fa(3) ) + ( rb(3)*Fb(1) - rb(1)*Fb(3) );
+M0z = ( ra(1)*Fa(2) - ra(2)*Fa(1) ) + ( rb(1)*Fb(2) - rb(2)*Fb(1) );
+M0  = [M0x, M0y, M0z];
+
+% --- 3) Nyomaték az rc pontban ---
+% Mc = M0 - (rc × F)
+% de itt F = [0,0,0], így a második tag is [0,0,0], de bemutatjuk a számítást:
+Mc_x = M0x - ( rc(2)*F(3) - rc(3)*F(2) );
+Mc_y = M0y - ( rc(3)*F(1) - rc(1)*F(3) );
+Mc_z = M0z - ( rc(1)*F(2) - rc(2)*F(1) );
+Mc   = [Mc_x, Mc_y, Mc_z];
+
+% --- 4) Kiírás ---
+fprintf('Eredő erő:\n');        disp(F);
+fprintf('Nyomaték az origóra:\n'); disp(M0);
+fprintf('Nyomaték az rc pontban:\n'); disp(Mc);
+
+% --- 5) Egyensúlyvizsgálat ---
+tol = 1e-6;
+if norm(F) < tol && norm(Mc) < tol
+    disp('A test egyensúlyban van az rc pontban.');
+else
+    disp('A test NINCS egyensúlyban az rc pontban.');
+end
