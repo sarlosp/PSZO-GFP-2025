@@ -1,0 +1,85 @@
+function main_script
+    % Parabola és kör metszéspontjai - Automatikus intervallumfelezés saját módszerrel
+    clear; clc; close all;
+    format long;
+
+    % 1) Parabola: y = -(x-1)^2 + 6, x tartományban [-3,5]
+    % 2) Kör: középpont C = [1,2], sugár R = 3
+
+    % Ábrázolás előkészítése
+    x_plot = linspace(-3, 5, 400);
+    y_par  = -(x_plot - 1).^2 + 6;
+    theta  = linspace(0, 2*pi, 400);
+    x_circ = 1 + 3*cos(theta);
+    y_circ = 2 + 3*sin(theta);
+
+    figure;
+    plot(x_plot, y_par, 'b-', 'LineWidth', 1.5); hold on;
+    plot(x_circ, y_circ, 'r-', 'LineWidth', 1.5);
+    grid on; axis equal;
+    xlabel('x'); ylabel('y');
+    title('Parabola és kör metszéspontjai');
+    legend('Parabola', 'Kör', 'Location', 'Best');
+
+    % Automatikus előjelváltás keresés a teljes tartományban
+    N = 1000;
+    x_test = linspace(-3, 5, N);
+    f_test = f(x_test);
+
+    idx_signchange = find(f_test(1:end-1).*f_test(2:end) < 0);
+
+    roots_x = [];
+    for k = 1:length(idx_signchange)
+        x1 = x_test(idx_signchange(k));
+        x2 = x_test(idx_signchange(k)+1);
+        xk = felez(x1, x2);
+        % Duplikációk kiszűrése (numerikus hibák miatt)
+        if isempty(roots_x) || min(abs(roots_x - xk)) > 1e-8
+            roots_x(end+1,1) = xk; %#ok<AGROW>
+        end
+    end
+
+    % Metszéspontok kirajzolása és kiírása
+    for k = 1:length(roots_x)
+        xk = roots_x(k);
+        yk = -(xk - 1)^2 + 6;
+        plot(xk, yk, 'ko', 'MarkerFaceColor', 'k');
+        fprintf('Metszéspont %d: x = %.10f, y = %.10f\n', k, xk, yk);
+    end
+
+    hold off;
+end
+
+%% Segédfüggvény: f(x) az egyenletrendszerhez
+function y = f(x)
+    y = (x-1).^2 + ( (-(x-1).^2 + 6) - 2 ).^2 - 9;
+end
+
+%% Saját intervallumfelezés (bisection) segédfüggvény beépített nélkül
+function [xk] = felez(x1h, x2h)
+    eps = 1e-10;
+    maxiter = 1000;
+    fx1 = f(x1h);
+    fx2 = f(x2h);
+    if fx1*fx2 > 0
+        error('Nincs előjelváltás az intervallumban!');
+    end
+    k = 1;
+    xk = (x1h + x2h)/2;
+    fxk = f(xk);
+    while abs(fxk) > eps && k < maxiter
+        if fx1*fxk < 0
+            x2h = xk;
+            fx2 = fxk;
+        else
+            x1h = xk;
+            fx1 = fxk;
+        end
+        xk = (x1h + x2h)/2;
+        fxk = f(xk);
+        k = k + 1;
+    end
+    if k >= maxiter
+        warning('Maximum iterációtúllépés!');
+    end
+end
