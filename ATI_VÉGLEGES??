@@ -1,0 +1,40 @@
+% main.m
+clear; clf; clc; format long;
+
+% 1) Parabola rajzolása
+x = linspace(-3,5,500);
+y = -(x-1).^2 + 6;
+figure(1);
+plot(x, y, 'b-', 'LineWidth', 1.5);
+hold on; grid on; axis equal
+
+% 2) Kör rajzolása (középpont [1,2], r=3)
+t = linspace(0,2*pi,500);
+xc = 1 + 3*cos(t);
+yc = 2 + 3*sin(t);
+plot(xc, yc, 'r-', 'LineWidth', 1.5)
+
+% 3) Metszéspontok számítása
+coeff = [1 0 -7 0 7];             % t^4 -7t^2 +7 = 0
+t_roots = roots(coeff);
+tol = 1e-8;
+t_real = t_roots(abs(imag(t_roots))<tol);
+x_int = 1 + real(t_real);
+y_int = -(x_int-1).^2 + 6;
+
+% 4) Metszéspontok kirajzolása és konzolra írása
+plot(x_int, y_int, 'ko', 'MarkerFaceColor','k')
+
+n = length(x_int);
+for k = 1:n
+    % grafikai felirat
+    lbl = ['(' num2str(x_int(k),'%.3f') ', ' num2str(y_int(k),'%.3f') ')'];
+    text(x_int(k)+0.1, y_int(k), lbl, 'FontSize', 10)
+    % konzolra kiírás
+    fprintf('Metszéspont %d: x = %.3f, y = %.3f\n', k, x_int(k), y_int(k));
+end
+
+% 5) Cím, jelmagyarázat
+title('y = -(x-1)^2+6 és kör: (x-1)^2+(y-2)^2=9 metszéspontjai')
+legend('Parabola','Kör','Metszéspontok','Location','Best')
+xlabel('x'); ylabel('y');
