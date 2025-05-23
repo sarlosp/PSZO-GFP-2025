@@ -1,0 +1,27 @@
+% Bemenet beolvasása
+a = input('Adja meg az a értékét: ');
+b = input('Adja meg a b értékét: ');
+
+% Számítás
+% Az egyenlet: 3^a * e^x + sqrt(b) = 0
+% => e^x = -sqrt(b) / 3^a
+
+% Ellenőrizzük, hogy sqrt(b) értelmezhető-e
+if b < 0
+    disp('Nincs valós megoldás (b negatív)');
+    return;
+end
+
+% Kitevő és argumentum kiszámítása
+coef = 3^a;
+rad  = -sqrt(b) / coef;
+
+% Valós megoldás vizsgálata
+if rad > 0
+    x_real = log(rad);
+    fprintf('Valós megoldás: x = %f\n', x_real);
+else
+    % Komplex megoldás
+    x_complex = log(rad);
+    fprintf('Nincs valós megoldás. Komplex megoldás: x = %s\n', num2str(x_complex));
+end
