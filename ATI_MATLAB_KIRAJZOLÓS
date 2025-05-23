@@ -1,0 +1,70 @@
+%% main_script.m
+
+%% EDITELD MEG ZOLINAK IS CSINÁLOM
+function main_script
+    % Parabola és kör metszéspontjai numerikus módszerrel referenciakód stílusában
+    clear; clc; close all;
+    format long;
+
+    % 1) Parabola: y = -(x-1)^2 + 6, x tartományban [-3,5]
+    % 2) Kör: középpont C = [1,2], sugár R = 3
+
+    % Ábrázolás előkészítése
+    x_plot = linspace(-3, 5, 400);
+    y_par  = -(x_plot - 1).^2 + 6;
+    theta  = linspace(0, 2*pi, 400);
+    x_circ = 1 + 3*cos(theta);
+    y_circ = 2 + 3*sin(theta);
+
+    figure;
+    plot(x_plot, y_par, 'b-', 'LineWidth', 1.5); hold on;
+    plot(x_circ, y_circ, 'r-', 'LineWidth', 1.5);
+    grid on; axis equal;
+    xlabel('x'); ylabel('y');
+    title('Parabola és kör metszéspontjai');
+    legend('Parabola', 'Kör', 'Location', 'Best');
+
+    % Numerikus gyökkeresés több intervallumban intervallum-felezéssel
+    intervals = [-3, -1; -1, 1; 1, 3; 3, 5];
+    roots_x = [];
+    for k = 1:size(intervals,1)
+        x1 = intervals(k,1);
+        x2 = intervals(k,2);
+        if f(x1)*f(x2) < 0
+            xk = felez(x1, x2);      % referencia felez használata
+            roots_x(end+1,1) = xk; %#ok<AGROW>
+        end
+    end
+
+    % Metszéspontok kirajzolása és kiírása
+    for k = 1:length(roots_x)
+        xk = roots_x(k);
+        yk = -(xk - 1)^2 + 6;
+        plot(xk, yk, 'ko', 'MarkerFaceColor', 'k');
+        fprintf('Metszéspont %d: x = %.6f, y = %.6f\n', k, xk, yk);
+    end
+
+    hold off;
+end
+
+%% Segédfüggvény: f(x) az egyenletrendszerhez
+function y = f(x)
+    % y(x) = -(x-1)^2 + 6 a parabola,
+    % f(x) = (x-1)^2 + (y(x)-2)^2 - 9
+    y = (x-1).^2 + ( (-(x-1).^2 + 6) - 2 ).^2 - 9;
+end
+
+%% Segédfüggvény: intervallum felezés (referencia kód alapján)
+function [xk] = felez(x1h, x2h)
+    eps = 1e-10;
+    xk = (x1h + x2h)/2;
+    while abs(f(xk)) > eps
+        if f(x1h)*f(xk) < 0
+            x2h = xk;
+        else
+            x1h = xk;
+        end
+        xk = (x1h + x2h)/2;
+    end
+    % plot(xk, f(xk), 'o');  % opcionális megjelenítés
+end
