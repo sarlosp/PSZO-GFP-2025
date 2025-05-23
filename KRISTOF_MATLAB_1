@@ -1,0 +1,15 @@
+a = input('Adja meg az a értékét: ');
+b = input('Adja meg a b értékét: ');
+
+% Ellenőrizzük, hogy van-e valós, pozitív megoldás
+if a <= 0
+    disp('Nincs megoldás');
+else
+    coef = a^(3/4);
+    x_val = exp(b / coef);
+    if isreal(x_val) && x_val > 0
+        fprintf('A megoldás: x = %f\n', x_val);
+    else
+        disp('Nincs megoldás');
+    end
+end
