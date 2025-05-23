@@ -1,0 +1,23 @@
+% main.m EDITELD MEG, RATIO HELYETT SZAKÁLYOS ELNEVEZÉS !!!!!!!!!!!!!!!!!!!!!
+% Megoldja az a*exp(sqrt(x)) - b = 0 egyenletet egyetlen fájlban.
+
+% Beolvasás
+a = input('Adja meg az a értékét: ');
+b = input('Adja meg a b értékét: ');
+
+% Ellenőrzés és számítás
+if a == 0
+    % ha a=0, akkor -b=0 lenne; ha b~=0 nincs megoldás, ha b=0,
+    % akkor minden x megoldás, de itt egyedi megoldást keresünk
+    fprintf('Nincs megoldás\n');
+else
+    ratio = b / a;
+    if ratio <= 0
+        % ln(ratio) nem valós
+        fprintf('Nincs megoldás\n');
+    else
+        % egyedi, valós megoldás
+        x = log(ratio)^2;
+        fprintf('A megoldás: x = %.6f\n', x);
+    end
+end
